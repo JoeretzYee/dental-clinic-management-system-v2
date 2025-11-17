@@ -1,7 +1,7 @@
 import { addDoc, collection, getDocs, getFirestore } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import "../css/Payment.css";
+import "../css/Payment.module.css";
 
 function Payment() {
   const [selectedPatient, setSelectedPatient] = useState(null);

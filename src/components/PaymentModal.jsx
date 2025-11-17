@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../css/PaymentModal.css";
+import "../css/PaymentModal.module.css";
 
 function PaymentModal({ show, onClose, onSave, payment }) {
   const [paidAmount, setPaidAmount] = useState("");

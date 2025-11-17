@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../css/Dashboard.css";
+import "../css/Dashboard.module.css";
 import { db, collection, getDocs } from "../firebase";
 import { Link } from "react-router-dom";
 
@@ -27,51 +27,40 @@ function Dashboard() {
       const appointments = querySnapshot.docs.map((doc) => doc.data());
 
       const today = new Date();
-      const tomorrow = new Date();
+      const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
 
-      // Determine the start and end of the current week
       const startOfWeek = new Date(today);
       startOfWeek.setDate(today.getDate() - today.getDay());
       const endOfWeek = new Date(today);
       endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
 
-      // Determine the start and end of next week
       const startOfNextWeek = new Date(today);
       startOfNextWeek.setDate(today.getDate() + 7 - today.getDay());
       const endOfNextWeek = new Date(today);
       endOfNextWeek.setDate(today.getDate() + 13 - today.getDay());
 
-      const isSameDay = (date1, date2) =>
-        date1.getFullYear() === date2.getFullYear() &&
-        date1.getMonth() === date2.getMonth() &&
-        date1.getDate() === date2.getDate();
+      const isSameDay = (d1, d2) =>
+        d1.getFullYear() === d2.getFullYear() &&
+        d1.getMonth() === d2.getMonth() &&
+        d1.getDate() === d2.getDate();
 
       const isWithinWeek = (date) => date >= startOfWeek && date <= endOfWeek;
-
       const isWithinNextWeek = (date) =>
         date >= startOfNextWeek && date <= endOfNextWeek;
 
-      const appointmentsToday = appointments.filter((appointment) =>
-        isSameDay(new Date(appointment.date), today)
+      setAppointmentsTodayCount(
+        appointments.filter((a) => isSameDay(new Date(a.date), today)).length
       );
-
-      const appointmentsTomorrow = appointments.filter((appointment) =>
-        isSameDay(new Date(appointment.date), tomorrow)
+      setAppointmentsTomorrowCount(
+        appointments.filter((a) => isSameDay(new Date(a.date), tomorrow)).length
       );
-
-      const appointmentsThisWeek = appointments.filter((appointment) =>
-        isWithinWeek(new Date(appointment.date))
+      setAppointmentsThisWeekCount(
+        appointments.filter((a) => isWithinWeek(new Date(a.date))).length
       );
-
-      const appointmentsNextWeek = appointments.filter((appointment) =>
-        isWithinNextWeek(new Date(appointment.date))
+      setAppointmentsUpcomingCount(
+        appointments.filter((a) => isWithinNextWeek(new Date(a.date))).length
       );
-
-      setAppointmentsTodayCount(appointmentsToday.length);
-      setAppointmentsTomorrowCount(appointmentsTomorrow.length);
-      setAppointmentsThisWeekCount(appointmentsThisWeek.length);
-      setAppointmentsUpcomingCount(appointmentsNextWeek.length);
     };
 
     fetchPatientsCount();
@@ -80,90 +69,83 @@ function Dashboard() {
   }, []);
 
   return (
-    <div>
-      <div className="row">
-        <Link to="/appointments">
+    <div className="container my-4">
+      {/* Appointments Card */}
+      <div className="row mb-4">
+        <div className="col-12">
           <div className="card bg-dark text-light">
-            <div className="card-body text-center appointments-summary">
+            <div className="card-body text-center">
               <div className="h1 mb-3">
                 <i className="bi bi-list-task"></i>
               </div>
               <h3 className="card-title mb-3">Appointments</h3>
-              <div className="appointments-buttons">
-                <Link to="/appointments">
-                  <button
-                    type="button"
-                    className="btn btn-dashboard btn-primary position-relative"
-                  >
-                    Appointments Today
-                    <span className="badge rounded-pill bg-danger">
-                      {appointmentsTodayCount}
-                    </span>
-                  </button>
+              <div className="d-flex flex-wrap justify-content-center gap-2">
+                <Link
+                  to="/appointments"
+                  className="btn btn-primary position-relative"
+                >
+                  Today
+                  <span className="badge rounded-pill bg-danger ms-2">
+                    {appointmentsTodayCount}
+                  </span>
                 </Link>
-                <Link to="/appointments">
-                  <button
-                    type="button"
-                    className="btn btn-dashboard btn-primary position-relative"
-                  >
-                    Appointments Tomorrow
-                    <span className="badge rounded-pill bg-danger">
-                      {appointmentsTomorrowCount}
-                    </span>
-                  </button>
+                <Link
+                  to="/appointments"
+                  className="btn btn-primary position-relative"
+                >
+                  Tomorrow
+                  <span className="badge rounded-pill bg-danger ms-2">
+                    {appointmentsTomorrowCount}
+                  </span>
                 </Link>
-                <Link to="/appointments">
-                  <button
-                    type="button"
-                    className="btn btn-dashboard btn-primary position-relative"
-                  >
-                    Appointments This Week
-                    <span className="badge rounded-pill bg-danger">
-                      {appointmentsThisWeekCount}
-                    </span>
-                  </button>
+                <Link
+                  to="/appointments"
+                  className="btn btn-primary position-relative"
+                >
+                  This Week
+                  <span className="badge rounded-pill bg-danger ms-2">
+                    {appointmentsThisWeekCount}
+                  </span>
                 </Link>
-                <Link to="/appointments">
-                  <button
-                    type="button"
-                    className="btn btn-dashboard btn-primary position-relative"
-                  >
-                    Next Week Appointments
-                    <span className="badge rounded-pill bg-danger">
-                      {appointmentsUpcomingCount}
-                    </span>
-                  </button>
+                <Link
+                  to="/appointments"
+                  className="btn btn-primary position-relative"
+                >
+                  Next Week
+                  <span className="badge rounded-pill bg-danger ms-2">
+                    {appointmentsUpcomingCount}
+                  </span>
                 </Link>
               </div>
             </div>
           </div>
-        </Link>
+        </div>
       </div>
-      <br />
+
+      {/* Patients & Treatments Cards */}
       <div className="row g-4">
-        <div className="col-md">
-          <Link to="/patients">
-            <div className="card bg-dark text-light">
-              <div className="card-body text-center">
+        <div className="col-12 col-md-6">
+          <Link to="/patients" className="text-decoration-none">
+            <div className="card bg-dark text-light h-100 text-center">
+              <div className="card-body">
                 <div className="h1 mb-3">
                   <i className="bi bi-laptop"></i>
                 </div>
                 <h3 className="card-title mb-3">Patients</h3>
-                <p className="card-text">{patientsCount}</p>
+                <p className="card-text display-6">{patientsCount}</p>
               </div>
             </div>
           </Link>
         </div>
-
-        <div className="col-md">
-          <Link to="/treatments">
-            <div className="card bg-dark text-light">
-              <div className="card-body text-center">
+        <div className="col-12 col-md-6">
+          <Link to="/treatments" className="text-decoration-none">
+            <div className="card bg-dark text-light h-100 text-center">
+              <div className="card-body">
                 <div className="h1 mb-3">
                   <i className="bi bi-people"></i>
                 </div>
                 <h3 className="card-title mb-3">Treatments</h3>
-                <p className="card-text">{treatmentsCount}</p>
+                <p className="card-text display-6">{treatmentsCount}</p>
               </div>
             </div>
           </Link>

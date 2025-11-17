@@ -11,7 +11,7 @@ import {
   db,
   updateDoc,
 } from "../firebase";
-import "../css/PatientDetails.css";
+import "../css/PatientDetails.module.css";
 import PaymentModal from "./PaymentModal";
 
 function PatientDetails() {

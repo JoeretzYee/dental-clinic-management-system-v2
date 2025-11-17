@@ -13,7 +13,7 @@ import {
   updateDoc,
 } from "../firebase";
 import Swal from "sweetalert2";
-import "../css/Patients.css";
+import "../css/Patients.module.css";
 
 function Patients() {
   const navigate = useNavigate();

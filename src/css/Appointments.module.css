@@ -1,0 +1,94 @@
+.appointmentButtonsContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Appointments.css - Add these styles */
+
+/* Force table cells to stay in their proper positions */
+.appointments-table th,
+.appointments-table td {
+  position: relative !important;
+  vertical-align: middle !important;
+}
+
+/* Ensure badge stays in schedule column */
+.appointments-table td:first-child {
+  text-align: center !important;
+}
+
+/* Force status buttons to stay in status column */
+.appointments-table td:nth-child(6) {
+  min-width: 150px !important;
+}
+
+/* Ensure action buttons stay in action column */
+.appointments-table td:last-child {
+  min-width: 120px !important;
+  text-align: center !important;
+}
+
+/* Remove any absolute positioning that might be causing issues */
+.appointments-table .badge,
+.appointments-table .btn {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+}
+
+/* Specific styling for schedule badges */
+.schedule-badge {
+  display: inline-block !important;
+  margin: 2px !important;
+  position: relative !important;
+}
+
+/* Status column styling */
+.status-column {
+  min-width: 150px !important;
+  text-align: center !important;
+}
+
+.status-buttons {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  align-items: center !important;
+  margin-top: 4px !important;
+}
+
+/* Action column styling */
+.action-buttons {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  flex-wrap: wrap !important;
+}
+
+/* Modal backdrop fix */
+.modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 1040 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: #000 !important;
+}
+
+.modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 1050 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  outline: 0 !important;
+}

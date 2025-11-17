@@ -9,9 +9,9 @@ import {
   getDocs,
   updateDoc,
 } from "../firebase";
-import "../css/Appointments.css";
+import "../css/Appointments.module.css";
+
 function Appointments() {
-  //states
   const [showModal, setShowModal] = useState(false);
   const [patientName, setPatientName] = useState("");
   const [date, setDate] = useState("");
@@ -29,39 +29,73 @@ function Appointments() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentAppointmentId, setCurrentAppointmentId] = useState(null);
 
-  const fetchPatients = async () => {
-    const querySnapshot = await getDocs(collection(db, "patients"));
-    const patientsList = querySnapshot.docs.map((doc) => doc.data().name);
-    setPatients(patientsList);
-  };
-
-  const fetchTreatments = async () => {
-    const querySnapshot = await getDocs(collection(db, "treatments"));
-    const treatmentsList = querySnapshot.docs.map((doc) => doc.data().name);
-    setTreatments(treatmentsList);
-  };
-
   const fetchAppointments = async () => {
-    const querySnapshot = await getDocs(collection(db, "appointments"));
-    const appointmentsList = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    // Sort by nearest date
-    appointmentsList.sort((a, b) => new Date(a.date) - new Date(b.date));
-    setAppointments(appointmentsList);
+    try {
+      const querySnapshot = await getDocs(collection(db, "appointments"));
+      const list = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      list.sort((a, b) => new Date(a.date) - new Date(b.date));
+      setAppointments(list);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+      Swal.fire("Error!", "Failed to load appointments", "error");
+    }
   };
-  //useEffect
+
   useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "patients"));
+        setPatients(querySnapshot.docs.map((doc) => doc.data().name));
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+      }
+    };
+
+    const fetchTreatments = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "treatments"));
+        setTreatments(querySnapshot.docs.map((doc) => doc.data().name));
+      } catch (error) {
+        console.error("Error fetching treatments:", error);
+      }
+    };
+
     fetchPatients();
     fetchTreatments();
     fetchAppointments();
   }, []);
-  //functions
-  const handleShow = () => setShowModal(true);
-  const handleClose = () => setShowModal(false);
-  // handle appointments
+
+  const handleShow = () => {
+    setIsEditing(false);
+    setCurrentAppointmentId(null);
+    setPatientName("");
+    setDate("");
+    setTreatment("");
+    setTime("");
+    setStatus("pending");
+    setShowModal(true);
+  };
+
+  const handleClose = () => {
+    setShowModal(false);
+    setIsEditing(false);
+    setCurrentAppointmentId(null);
+    setPatientName("");
+    setDate("");
+    setTreatment("");
+    setTime("");
+    setStatus("pending");
+  };
+
   const handleAddAppointment = async () => {
+    if (!patientName || !date || !treatment || !time) {
+      Swal.fire("Error!", "Please fill in all fields", "error");
+      return;
+    }
+
     try {
       if (isEditing && currentAppointmentId) {
         await updateDoc(doc(db, "appointments", currentAppointmentId), {
@@ -83,23 +117,25 @@ function Appointments() {
         Swal.fire("Success!", "Appointment Added Successfully.", "success");
       }
       handleClose();
-      fetchAppointments();
+      await fetchAppointments();
     } catch (error) {
+      console.error("Error in adding/updating appointment:", error);
       Swal.fire("Error!", "Error in adding/updating Appointment", "error");
-      console.error("Error adding/updating appointment: ", error);
     }
   };
-  const filteredPatients = patients.filter((patient) =>
-    patient.toLowerCase().includes(patientSearch.toLowerCase())
+
+  const filteredPatients = patients.filter((p) =>
+    p.toLowerCase().includes(patientSearch.toLowerCase())
   );
 
-  const filteredTreatments = treatments.filter((treatment) =>
-    treatment.toLowerCase().includes(treatmentSearch.toLowerCase())
+  const filteredTreatments = treatments.filter((t) =>
+    t.toLowerCase().includes(treatmentSearch.toLowerCase())
   );
-  const filteredAppointments = appointments.filter((appointment) =>
-    appointment.patientName.toLowerCase().includes(filterName.toLowerCase())
+
+  const filteredAppointments = appointments.filter((a) =>
+    a.patientName.toLowerCase().includes(filterName.toLowerCase())
   );
-  // Function to determine badge text and style
+
   const getBadge = (dateStr) => {
     const today = new Date();
     const appointmentDate = new Date(dateStr);
@@ -114,47 +150,42 @@ function Appointments() {
     const endOfNextWeek = new Date(today);
     endOfNextWeek.setDate(today.getDate() + 13 - today.getDay());
 
-    if (isSameDay(appointmentDate, today)) {
-      return { text: "Today", class: "badge bg-danger" };
-    } else if (isSameDay(appointmentDate, tomorrow)) {
-      return { text: "Tomorrow", class: "badge bg-warning" };
-    } else if (appointmentDate >= startOfWeek && appointmentDate <= endOfWeek) {
-      return { text: "This Week", class: "badge bg-info" };
-    } else if (
-      appointmentDate >= startOfNextWeek &&
-      appointmentDate <= endOfNextWeek
-    ) {
-      return { text: "Next Week", class: "badge bg-primary" };
-    } else {
-      return { text: "", class: "" };
-    }
+    if (isSameDay(appointmentDate, today))
+      return { text: "Today", class: "bg-danger" };
+    if (isSameDay(appointmentDate, tomorrow))
+      return { text: "Tomorrow", class: "bg-warning" };
+    if (appointmentDate >= startOfWeek && appointmentDate <= endOfWeek)
+      return { text: "This Week", class: "bg-info" };
+    if (appointmentDate >= startOfNextWeek && appointmentDate <= endOfNextWeek)
+      return { text: "Next Week", class: "bg-primary" };
+    return { text: "", class: "" };
   };
-  const isSameDay = (date1, date2) =>
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate();
 
-  // Function to format time
+  const isSameDay = (d1, d2) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
   const formatTime = (timeStr) => {
+    if (!timeStr) return "";
     const [hours, minutes] = timeStr.split(":").map(Number);
     const ampm = hours >= 12 ? "PM" : "AM";
-    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
+    const formattedHours = hours % 12 || 12;
     const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
     return `${formattedHours}:${formattedMinutes} ${ampm}`;
   };
-  //update status
+
   const updateStatus = async (id, newStatus) => {
     try {
-      const appointmentRef = doc(db, "appointments", id);
-      await updateDoc(appointmentRef, { status: newStatus });
+      await updateDoc(doc(db, "appointments", id), { status: newStatus });
       Swal.fire("Success!", `Appointment marked as ${newStatus}.`, "success");
-      fetchAppointments(); // Refresh the appointments list
+      await fetchAppointments();
     } catch (error) {
-      Swal.fire("Error!", "Error updating appointment status", "error");
-      console.error("Error updating appointment status: ", error);
+      console.error("Error updating status:", error);
+      Swal.fire("Error!", "Error updating status", "error");
     }
   };
-  //handle edit
+
   const handleEdit = (appointment) => {
     setIsEditing(true);
     setCurrentAppointmentId(appointment.id);
@@ -165,46 +196,61 @@ function Appointments() {
     setStatus(appointment.status);
     setShowModal(true);
   };
-  //handle delete
+
   const handleDeleteAppointment = async (id) => {
-    try {
-      await deleteDoc(doc(db, "appointments", id));
-      Swal.fire("Deleted!", "Appointment has been deleted.", "success");
-      fetchAppointments(); // Refresh the appointments list
-    } catch (error) {
-      Swal.fire("Error!", "Error deleting appointment", "error");
-      console.error("Error deleting appointment: ", error);
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteDoc(doc(db, "appointments", id));
+        Swal.fire("Deleted!", "Appointment has been deleted.", "success");
+        await fetchAppointments();
+      } catch (error) {
+        console.error("Error deleting appointment:", error);
+        Swal.fire("Error!", "Error deleting appointment", "error");
+      }
     }
   };
 
   return (
-    <div>
-      <div className="row">
-        <div className="col-md-12 d-flex align-items-center">
+    <div className="container my-4">
+      {/* Search & Add Button */}
+      <div className="row mb-3">
+        <div className="col-12 d-flex flex-column flex-md-row gap-2">
           <input
             type="text"
-            className="form-control me-2"
+            className="form-control flex-grow-1"
             placeholder="Search By Name"
             value={filterName}
             onChange={(e) => setFilterName(e.target.value)}
-            style={{ width: "auto", flexGrow: 1 }}
           />
-          <button className="btn btn-dark w-auto" onClick={handleShow}>
+          <button className="btn btn-dark" onClick={handleShow}>
             Add Appointment
           </button>
         </div>
       </div>
-      <div className="table-container">
-        <table class="table table-responsive caption-top ">
-          <caption>APPOINTMENTS</caption>
-          <thead>
+
+      {/* Appointments Table */}
+      <div className="table-responsive">
+        <table className="table table-striped caption-top appointments-table">
+          <caption>Appointments</caption>
+          <thead className="table-dark">
             <tr>
-              <th scope="col">Patient Name</th>
-              <th scope="col">Date</th>
-              <th scope="col">Treatment</th>
-              <th scope="col">Time</th>
-              <th scope="col">Status</th>
-              <th scope="col">Action</th>
+              <th>Schedule</th>
+              <th>Patient Name</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Treatment</th>
+              <th className="status-column">Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -212,30 +258,35 @@ function Appointments() {
               const { text, class: badgeClass } = getBadge(appointment.date);
               return (
                 <tr key={appointment.id}>
-                  <td>{appointment.patientName}</td>
                   <td>
-                    <button
-                      type="button"
-                      className="btn btn-dashboard position-relative"
-                    >
-                      {appointment.date}
-                      {text && (
-                        <span
-                          className={`badge ${badgeClass}`}
-                          style={{ marginLeft: "10px" }}
-                        >
-                          {text}
-                        </span>
-                      )}
-                    </button>
+                    {text && (
+                      <span className={`badge schedule-badge ${badgeClass}`}>
+                        {text}
+                      </span>
+                    )}
                   </td>
-                  <td>{appointment.treatment}</td>
+                  <td>{appointment.patientName}</td>
+                  <td>{appointment.date}</td>
                   <td>{formatTime(appointment.time)}</td>
-                  <td>{appointment.status}</td>
-                  <td>
-                    <div className="appointmentButtonsContainer">
+                  <td>{appointment.treatment}</td>
+                  <td className="status-column">
+                    <div className="d-flex flex-column align-items-center">
+                      <span
+                        className={`badge ${
+                          appointment.status === "pending"
+                            ? "bg-warning"
+                            : appointment.status === "ongoing"
+                            ? "bg-info"
+                            : appointment.status === "done"
+                            ? "bg-success"
+                            : "bg-secondary"
+                        }`}
+                      >
+                        {appointment.status}
+                      </span>
+                      {/* Status update buttons */}
                       {appointment.status === "pending" && (
-                        <>
+                        <div className="status-buttons">
                           <button
                             className="btn btn-sm btn-warning"
                             onClick={() =>
@@ -243,52 +294,41 @@ function Appointments() {
                             }
                           >
                             Ongoing
-                          </button>{" "}
-                          &nbsp;
+                          </button>
                           <button
                             className="btn btn-sm btn-success"
                             onClick={() => updateStatus(appointment.id, "done")}
                           >
                             Done
                           </button>
-                        </>
+                        </div>
                       )}
                       {appointment.status === "ongoing" && (
-                        <button
-                          className="btn btn-sm btn-success"
-                          onClick={() => updateStatus(appointment.id, "done")}
-                        >
-                          Done
-                        </button>
+                        <div className="status-buttons">
+                          <button
+                            className="btn btn-sm btn-success"
+                            onClick={() => updateStatus(appointment.id, "done")}
+                          >
+                            Done
+                          </button>
+                        </div>
                       )}
-                      &nbsp;
+                    </div>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
                       <button
                         className="btn btn-sm btn-danger"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Delete Button"
                         onClick={() => handleDeleteAppointment(appointment.id)}
                       >
-                        <i className="bi bi-trash bi-danger"></i>
-                      </button>{" "}
-                      &nbsp;
-                      <button
-                        className="btn btn-sm btn-success"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Edit Button"
-                        onClick={() => handleEdit(appointment)}
-                      >
-                        <i className="bi bi-pencil-square"></i>
+                        <i className="bi bi-trash"></i>
                       </button>{" "}
                       &nbsp;
                       <button
                         className="btn btn-sm btn-primary"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="View Patient Button"
+                        onClick={() => handleEdit(appointment)}
                       >
-                        <i className="bi bi-eye-fill"></i>
+                        <i className="bi bi-pencil-square"></i>
                       </button>
                     </div>
                   </td>
@@ -299,22 +339,29 @@ function Appointments() {
         </table>
       </div>
 
+      {/* Modal */}
       {showModal && (
-        <div className="modal show" style={{ display: "block" }}>
-          <div className="modal-dialog">
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
                   {isEditing ? "Edit Appointment" : "Add Appointment"}
                 </h5>
-                <button type="button" className="close" onClick={handleClose}>
-                  <span>&times;</span>
-                </button>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={handleClose}
+                ></button>
               </div>
               <div className="modal-body">
-                <form>
-                  <div className="form-group">
-                    <label>Patient Name</label>
+                <form className="row g-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">Patient Name</label>
                     <input
                       type="text"
                       className="form-control"
@@ -323,9 +370,10 @@ function Appointments() {
                       onChange={(e) => setPatientSearch(e.target.value)}
                     />
                     <select
-                      className="form-control mt-2"
+                      className="form-select mt-2"
                       value={patientName}
                       onChange={(e) => setPatientName(e.target.value)}
+                      required
                     >
                       <option value="">Select Patient</option>
                       {filteredPatients.map((name, index) => (
@@ -335,17 +383,9 @@ function Appointments() {
                       ))}
                     </select>
                   </div>
-                  <div className="form-group">
-                    <label>Date</label>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Treatment</label>
+
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">Treatment</label>
                     <input
                       type="text"
                       className="form-control"
@@ -354,9 +394,10 @@ function Appointments() {
                       onChange={(e) => setTreatmentSearch(e.target.value)}
                     />
                     <select
-                      className="form-control mt-2"
+                      className="form-select mt-2"
                       value={treatment}
                       onChange={(e) => setTreatment(e.target.value)}
+                      required
                     >
                       <option value="">Select Treatment</option>
                       {filteredTreatments.map((name, index) => (
@@ -366,17 +407,44 @@ function Appointments() {
                       ))}
                     </select>
                   </div>
-                  <div className="form-group">
-                    <label>Time</label>
+
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">Date</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">Time</label>
                     <input
                       type="time"
                       className="form-control"
                       value={time}
                       onChange={(e) => setTime(e.target.value)}
+                      required
                     />
+                  </div>
+
+                  <div className="col-12">
+                    <label className="form-label">Status</label>
+                    <select
+                      className="form-select"
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="ongoing">Ongoing</option>
+                      <option value="done">Done</option>
+                    </select>
                   </div>
                 </form>
               </div>
+
               <div className="modal-footer">
                 <button
                   type="button"
