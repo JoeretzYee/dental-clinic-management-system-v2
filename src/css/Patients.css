@@ -1,0 +1,14 @@
+.table-container {
+  height: 80vh; /* Set the desired height */
+  overflow-y: auto; /* Enable vertical scrolling if content overflows */
+}
+
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  /* Additional table styling if needed */
+}
+
+.patients__modal_body {
+  text-align: left !important;
+}
