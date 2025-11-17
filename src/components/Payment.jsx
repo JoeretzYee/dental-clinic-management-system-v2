@@ -46,7 +46,7 @@ function Payment() {
     const { checked } = e.target;
     setSelectedTreatments((prev) =>
       checked
-        ? [...prev, { ...treatment, quantity: 1 }]
+        ? [...prev, { ...treatment, quantity: 1, price: 0 }]
         : prev.filter((t) => t.id !== treatment.id)
     );
   };
@@ -58,13 +58,20 @@ function Payment() {
     );
   };
 
+  const handleTreatmentPriceChange = (e, treatmentId) => {
+    const value = e.target.value;
+    setSelectedTreatments((prev) =>
+      prev.map((t) =>
+        t.id === treatmentId
+          ? { ...t, price: value === "" ? "" : parseFloat(value) }
+          : t
+      )
+    );
+  };
+
   const handleDiscountChange = (e) => {
     const value = e.target.value;
-
-    // allow empty string (user deleting)
     setDiscountInput(value);
-
-    // convert to number or 0
     const numeric = value === "" ? 0 : parseFloat(value);
     setDiscount(numeric);
     calculateTotalCost(selectedTreatments, numeric);
@@ -73,13 +80,16 @@ function Payment() {
   const calculateTotalCost = (treatments, disc) => {
     if (treatments.length > 0) {
       const cost = treatments.reduce(
-        (total, treatment) =>
-          total + Number(treatment.cost) * treatment.quantity,
+        (total, t) => total + (parseFloat(t.price) || 0) * t.quantity,
         0
       );
+
       const total = cost - (cost * (isNaN(disc) ? 0 : disc)) / 100;
       setTotalCost(total);
       setFormattedTotalCost(formatNumberWithCommas(total.toFixed(2)));
+    } else {
+      setTotalCost(0);
+      setFormattedTotalCost("0");
     }
   };
 
@@ -108,6 +118,7 @@ function Payment() {
         treatments: selectedTreatments.map((t) => ({
           name: t.name,
           quantity: t.quantity,
+          price: t.price,
         })),
         amountPaid,
         discount,
@@ -117,10 +128,9 @@ function Payment() {
         isFullyPaid,
       });
 
-      console.log("Payment successfully added!");
       Swal.fire("Success!", `Payment Successful.`, "success");
 
-      // Optionally reset the form or redirect
+      // Reset form
       setSelectedPatient(null);
       setSelectedTreatments([]);
       setAmountPaid(0);
@@ -134,6 +144,7 @@ function Payment() {
     }
   };
 
+  // recalculate total when selected treatments or discount change
   useEffect(() => {
     calculateTotalCost(selectedTreatments, discount);
   }, [selectedTreatments, discount]);
@@ -180,6 +191,7 @@ function Payment() {
               ))}
             </select>
           </div>
+
           <div className="mb-3">
             <label htmlFor="treatmentSearch" className="form-label">
               Search Treatment
@@ -197,7 +209,10 @@ function Payment() {
             </label>
             <div id="treatment" className="scrollable-treatments">
               {filteredTreatments.map((treatment) => (
-                <div key={treatment.id} className="form-check">
+                <div
+                  key={treatment.id}
+                  className="form-check d-flex align-items-center mb-2"
+                >
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -206,31 +221,45 @@ function Payment() {
                     onChange={(e) => handleTreatmentChange(e, treatment)}
                   />
                   <label
-                    className="form-check-label"
+                    className="form-check-label ms-2"
                     htmlFor={`treatment-${treatment.id}`}
                   >
                     {treatment.name}
                   </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    id={`quantity-${treatment.id}`}
-                    value={
-                      selectedTreatments.find((t) => t.id === treatment.id)
-                        ?.quantity || 1
-                    }
-                    onChange={(e) => handleQuantityChange(e, treatment.id)}
-                    min="1"
-                    style={{
-                      display: "inline",
-                      width: "auto",
-                      marginLeft: "10px",
-                    }}
-                  />
+                  {selectedTreatments.find((t) => t.id === treatment.id) && (
+                    <input
+                      type="number"
+                      className="form-control ms-2"
+                      placeholder="Price"
+                      value={
+                        selectedTreatments.find((t) => t.id === treatment.id)
+                          ?.price ?? ""
+                      }
+                      onChange={(e) =>
+                        handleTreatmentPriceChange(e, treatment.id)
+                      }
+                      style={{ width: "120px" }}
+                    />
+                  )}
+
+                  {selectedTreatments.find((t) => t.id === treatment.id) && (
+                    <input
+                      type="number"
+                      className="form-control ms-2"
+                      value={
+                        selectedTreatments.find((t) => t.id === treatment.id)
+                          ?.quantity || 1
+                      }
+                      onChange={(e) => handleQuantityChange(e, treatment.id)}
+                      min="1"
+                      style={{ width: "80px" }}
+                    />
+                  )}
                 </div>
               ))}
             </div>
           </div>
+
           <div className="mb-3">
             <label htmlFor="discount" className="form-label">
               Discount (%)
@@ -245,6 +274,7 @@ function Payment() {
               max="100"
             />
           </div>
+
           <div className="mb-3">
             <label htmlFor="totalCost" className="form-label">
               Total Cost
@@ -257,6 +287,7 @@ function Payment() {
               readOnly
             />
           </div>
+
           <div className="mb-3">
             <label htmlFor="amountPaid" className="form-label">
               Amount Paid
@@ -270,6 +301,7 @@ function Payment() {
               required
             />
           </div>
+
           <button type="submit" className="btn btn-primary">
             Submit
           </button>
