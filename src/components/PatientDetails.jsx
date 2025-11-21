@@ -109,32 +109,35 @@ function PatientDetails() {
 
   return (
     <div className="container">
-      <h2 className="text-center mb-2">Patient Details</h2>
-      <div className="row g-2">
+      <div className="row g-2 d-flex justify-content-center">
         <div className="col-md-6">
           {patient ? (
-            <div>
-              <ul className="list-group list-group-flush lead patientDetailsTextLeft">
-                <li className="list-group-item">
-                  <span className="fw-bold">Name:</span> {patient.name}
-                </li>
-                <li className="list-group-item">
-                  <span className="fw-bold">Address:</span> {patient.address}
-                </li>
-                <li className="list-group-item">
-                  <span className="fw-bold">Number:</span> {patient.number}
-                </li>
-                <li className="list-group-item">
-                  <span className="fw-bold">Gender:</span> {patient.gender}
-                </li>
-                <li className="list-group-item">
-                  <span className="fw-bold">Date of Birth:</span> {patient.dob}
-                </li>
-                <li className="list-group-item">
-                  <span className="fw-bold">Allergies:</span>{" "}
-                  {patient.allergies}
-                </li>
-              </ul>
+            <div className="card shadow-sm p-3 mb-3">
+              <h4 className="text-center mb-3">Patient Details</h4>
+              <div className="row">
+                <div className="col-md-6">
+                  <p>
+                    <strong>Name:</strong> {patient.name}
+                  </p>
+                  <p>
+                    <strong>Address:</strong> {patient.address}
+                  </p>
+                  <p>
+                    <strong>Number:</strong> {patient.number}
+                  </p>
+                </div>
+                <div className="col-md-6">
+                  <p>
+                    <strong>Gender:</strong> {patient.gender}
+                  </p>
+                  <p>
+                    <strong>Date of Birth:</strong> {patient.dob}
+                  </p>
+                  <p>
+                    <strong>Allergies:</strong> {patient.allergies}
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             <p>Loading...</p>

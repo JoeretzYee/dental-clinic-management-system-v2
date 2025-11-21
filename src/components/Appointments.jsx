@@ -271,22 +271,16 @@ function Appointments() {
                   <td>{appointment.treatment}</td>
                   <td className="status-column">
                     <div className="d-flex flex-column align-items-center">
-                      <span
-                        className={`badge ${
-                          appointment.status === "pending"
-                            ? "bg-warning"
-                            : appointment.status === "ongoing"
-                            ? "bg-info"
-                            : appointment.status === "done"
-                            ? "bg-success"
-                            : "bg-secondary"
-                        }`}
-                      >
-                        {appointment.status}
-                      </span>
+                      {/* Only show badge if status is done */}
+                      {appointment.status === "done" && (
+                        <span className="badge bg-success">
+                          {appointment.status}
+                        </span>
+                      )}
+
                       {/* Status update buttons */}
                       {appointment.status === "pending" && (
-                        <div className="status-buttons">
+                        <div className="d-flex gap-1 mt-1">
                           <button
                             className="btn btn-sm btn-warning"
                             onClick={() =>
@@ -303,8 +297,9 @@ function Appointments() {
                           </button>
                         </div>
                       )}
+
                       {appointment.status === "ongoing" && (
-                        <div className="status-buttons">
+                        <div className="d-flex gap-1 mt-1">
                           <button
                             className="btn btn-sm btn-success"
                             onClick={() => updateStatus(appointment.id, "done")}
@@ -315,6 +310,7 @@ function Appointments() {
                       )}
                     </div>
                   </td>
+
                   <td>
                     <div className="action-buttons">
                       <button
