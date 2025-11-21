@@ -165,7 +165,6 @@ function Treatments() {
           <thead>
             <tr>
               <th scope="col">Name</th>
-              <th scope="col">Cost</th>
               <th scope="col">Description</th>
               <th scope="col">Action</th>
             </tr>
@@ -174,12 +173,7 @@ function Treatments() {
             {filteredTreatments.map((treatment) => (
               <tr key={treatment.id}>
                 <td>{treatment.name}</td>
-                <td>
-                  ₱
-                  {treatment.cost
-                    .toString()
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                </td>
+
                 <td>{treatment.description}</td>
 
                 <td>
@@ -241,7 +235,7 @@ function Treatments() {
                     }
                   />
                 </div>
-                <div className="mb-3">
+                {/* <div className="mb-3">
                   <label className="form-label">Treatment Cost</label>
                   <input
                     type="number"
@@ -255,7 +249,7 @@ function Treatments() {
                       })
                     }
                   />
-                </div>
+                </div> */}
                 <div className="mb-3">
                   <label className="form-label">Treatment Description</label>
                   <input
