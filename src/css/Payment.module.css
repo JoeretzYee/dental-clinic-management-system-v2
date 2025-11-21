@@ -3,6 +3,11 @@
   overflow-y: auto; /* Enables vertical scrolling */
 }
 
+.payment__label {
+  text-align: left !important;
+  display: block !important;
+}
+
 .payment__label label {
   text-align: left !important;
   display: block;

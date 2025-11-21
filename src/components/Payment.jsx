@@ -1,7 +1,7 @@
 import { addDoc, collection, getDocs, getFirestore } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import "../css/Payment.module.css";
+import payment_styles from "../css/Payment.module.css";
 
 function Payment() {
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -163,7 +163,10 @@ function Payment() {
       <div className="container payment__label">
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label htmlFor="patientSearch" className="form-label">
+            <label
+              htmlFor="patientSearch"
+              className={`form-label payment_styles.payment__label`}
+            >
               Search Patient
             </label>
             <input
@@ -174,7 +177,10 @@ function Payment() {
               value={patientSearch}
               onChange={(e) => setPatientSearch(e.target.value)}
             />
-            <label htmlFor="patientName" className="form-label mt-2">
+            <label
+              htmlFor="patientName"
+              className="form-label mt-2 payment__label"
+            >
               Patient Name
             </label>
             <select
@@ -193,7 +199,10 @@ function Payment() {
           </div>
 
           <div className="mb-3">
-            <label htmlFor="treatmentSearch" className="form-label">
+            <label
+              htmlFor="treatmentSearch"
+              className="form-label payment__label"
+            >
               Search Treatment
             </label>
             <input
@@ -204,7 +213,10 @@ function Payment() {
               value={treatmentSearch}
               onChange={(e) => setTreatmentSearch(e.target.value)}
             />
-            <label htmlFor="treatment" className="form-label mt-2">
+            <label
+              htmlFor="treatment"
+              className="form-label mt-2 payment__label"
+            >
               Treatment
             </label>
             <div id="treatment" className="scrollable-treatments">
@@ -261,7 +273,7 @@ function Payment() {
           </div>
 
           <div className="mb-3">
-            <label htmlFor="discount" className="form-label">
+            <label htmlFor="discount" className="form-label payment__label">
               Discount (%)
             </label>
             <input
@@ -276,7 +288,7 @@ function Payment() {
           </div>
 
           <div className="mb-3">
-            <label htmlFor="totalCost" className="form-label">
+            <label htmlFor="totalCost" className="form-label payment__label">
               Total Cost
             </label>
             <input
@@ -289,7 +301,7 @@ function Payment() {
           </div>
 
           <div className="mb-3">
-            <label htmlFor="amountPaid" className="form-label">
+            <label htmlFor="amountPaid" className="form-label payment__label">
               Amount Paid
             </label>
             <input
